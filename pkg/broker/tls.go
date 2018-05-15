@@ -54,6 +54,10 @@ func prepareBrokerTLSSecrets(br *api.Broker) error {
 	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return err
 	}
+	br.Spec.TLSSecretRef = &v1.ObjectReference{
+		Name:      se.Name,
+		Namespace: se.Namespace,
+	}
 	return nil
 }
 

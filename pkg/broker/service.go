@@ -3,7 +3,9 @@ package broker
 import (
 	"github.com/operator-framework/operator-sdk/pkg/sdk/action"
 	api "github.com/shawn-hurley/starter-pack-operator/pkg/apis/starterpack/v1alpha1"
+	log "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -36,5 +38,10 @@ func syncBrokerService(br *api.Broker) error {
 			},
 		},
 	}
-	return action.Create(s)
+	err := action.Create(s)
+	if err != nil && !apierrors.IsAlreadyExists(err) {
+		log.Errorf("unable to create service - %v", err)
+		return err
+	}
+	return nil
 }

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: starter-pack-operator
-          image: docker.io/shurley/starterpack-operator
+          image: docker.io/shurley/starterpack-operator:latest
           command:
           - starter-pack-operator
           imagePullPolicy: Always

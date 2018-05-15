@@ -108,7 +108,7 @@ func syncBrokerServiceAccount(br *api.Broker) error {
 	}
 
 	err := action.Create(sc)
-	if err != nil {
+	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return fmt.Errorf("Unable to create brokers service service account: %v", err)
 	}
 
@@ -137,7 +137,7 @@ func syncBrokerServiceAccount(br *api.Broker) error {
 			},
 		}
 		err := action.Create(clusterRole)
-		if err != nil {
+		if err != nil && !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("Unable to create brokers service cluster role: %v", err)
 		}
 
@@ -164,7 +164,7 @@ func syncBrokerServiceAccount(br *api.Broker) error {
 			},
 		}
 		err = action.Create(clusterRoleBinding)
-		if err != nil {
+		if err != nil && !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("Unable to create brokers service cluster role binding: %v", err)
 		}
 	}

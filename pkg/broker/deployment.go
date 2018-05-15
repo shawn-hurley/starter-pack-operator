@@ -5,8 +5,10 @@ import (
 
 	"github.com/operator-framework/operator-sdk/pkg/sdk/action"
 	api "github.com/shawn-hurley/starter-pack-operator/pkg/apis/starterpack/v1alpha1"
+	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	extapi "k8s.io/api/extensions/v1beta1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -64,24 +66,27 @@ func syncBrokerDeployment(br *api.Broker) error {
 								SuccessThreshold:    int32(1),
 								TimeoutSeconds:      int32(2),
 							},
+							VolumeMounts: createVolumeMounts(br),
 						},
 					},
+					Volumes: createVolumes(br),
 				},
 			},
 		},
 	}
-	return action.Create(d)
+	// TODO: We should get the deployment and make sure that it matches.
+	// If it does not match then we need update it.
+	err := action.Create(d)
+	if err != nil && !apierrors.IsAlreadyExists(err) {
+		logrus.Debugf("Deployment unable to be created: %v", err)
+		return err
+	}
 	return nil
+
 }
 
 func createArgs(br *api.Broker) []string {
 	args := []string{"--port", fmt.Sprintf("%v", br.Spec.Port)}
-	if br.Spec.TLSCert != "" {
-		args = append(args, "--tlsCert", br.Spec.TLSCert)
-	}
-	if br.Spec.TLSKey != "" {
-		args = append(args, "--tlsKey", br.Spec.TLSKey)
-	}
 	if br.Spec.AuthenticateK8SToken {
 		args = append(args, "--authenticate-k8s-token")
 	}
@@ -90,4 +95,49 @@ func createArgs(br *api.Broker) []string {
 	}
 	args = append(args, "-v", "5", "-logtostderr")
 	return args
+}
+
+func createVolumeMounts(br *api.Broker) []v1.VolumeMount {
+	/*if br.Spec.TLSSecretRef != nil {
+		return []v1.VolumeMount{
+			v1.VolumeMount{
+				MountPath: "/var/run/osb-starter-pack",
+				Name:      "osb-starter-pack-ssl",
+				ReadOnly:  true,
+			},
+		}
+	}
+	*/
+	return nil
+}
+
+func createVolumes(br *api.Broker) []v1.Volume {
+	/*
+		if br.Spec.TLSSecretRef != nil {
+			var mode int32 = 420
+			return []v1.Volume{
+				v1.Volume{
+					Name: "osb-starter-pack-ssl",
+					VolumeSource: v1.VolumeSource{
+						Secret: &v1.SecretVolumeSource{
+							DefaultMode: &mode,
+							SecretName:  fmt.Sprintf("tls-%v", br.Name),
+							Items: []v1.KeyToPath{
+								v1.KeyToPath{
+									Key:  "tls.crt",
+									Path: "cert.crt",
+								},
+								v1.KeyToPath{
+									Key:  "tls.key",
+									Path: "cert.key",
+								},
+							},
+						},
+					},
+				},
+			}
+		}
+	*/
+
+	return nil
 }

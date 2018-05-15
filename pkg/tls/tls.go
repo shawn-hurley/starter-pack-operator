@@ -1,5 +1,7 @@
 package tls
 
+// Copied from vault operator example.
+
 import (
 	"crypto/rand"
 	"crypto/rsa"

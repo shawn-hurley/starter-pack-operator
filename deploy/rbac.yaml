@@ -44,3 +44,17 @@ roleRef:
   kind: Role
   name: starter-pack-operator
   apiGroup: rbac.authorization.k8s.io
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: default-account-starter-pack-operator-test
+  namespace: test
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: test
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
