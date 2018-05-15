@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: starter-pack-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: starter-pack-operator
+  template:
+    metadata:
+      labels:
+        name: starter-pack-operator
+    spec:
+      containers:
+        - name: starter-pack-operator
+          image: docker.io/shurley/starterpack-operator
+          command:
+          - starter-pack-operator
+          imagePullPolicy: Always

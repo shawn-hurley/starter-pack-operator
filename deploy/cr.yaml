@@ -1,0 +1,4 @@
+apiVersion: "starterpack.osbkit.com/v1alpha1"
+kind: "Broker"
+metadata:
+  name: "example"
