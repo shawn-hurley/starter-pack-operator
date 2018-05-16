@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	version   = "v1alpha1"
-	groupName = "starterpack.osbkit.com"
+	version    = "v1alpha1"
+	groupName  = "starterpack.osbkit.com"
+	BrokerKind = "Broker"
 )
 
 var (

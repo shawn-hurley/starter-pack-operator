@@ -26,7 +26,7 @@ func syncClientServiceAccount(br *api.Broker) error {
 	clusterRole := &authz.ClusterRole{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ClusterRole",
-			APIVersion: "rbac.authroization.k8s.io/v1beta1",
+			APIVersion: "rbac.authorization.k8s.io/v1beta1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%v-client", br.Name),
@@ -42,7 +42,7 @@ func syncClientServiceAccount(br *api.Broker) error {
 	clusterRoleBinding := &authz.ClusterRoleBinding{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ClusterRoleBinding",
-			APIVersion: "rbac.authroization.k8s.io/v1beta1",
+			APIVersion: "rbac.authorization.k8s.io/v1beta1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%v-client", br.Name),
@@ -56,7 +56,7 @@ func syncClientServiceAccount(br *api.Broker) error {
 			},
 		},
 		RoleRef: authz.RoleRef{
-			APIGroup: "rbac.Authorization.k8s.io",
+			APIGroup: "rbac.authorization.k8s.io",
 			Kind:     "ClusterRole",
 			Name:     fmt.Sprintf("%v-client", br.Name),
 		},
@@ -75,6 +75,10 @@ func syncClientServiceAccount(br *api.Broker) error {
 		},
 		Type: v1.SecretTypeServiceAccountToken,
 	}
+	addOwnerRefToObject(sc, asOwner(br))
+	addOwnerRefToObject(clusterRole, asOwner(br))
+	addOwnerRefToObject(clusterRoleBinding, asOwner(br))
+	addOwnerRefToObject(scSecret, asOwner(br))
 	err := action.Create(sc)
 	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return fmt.Errorf("Unable to create brokers client service account: %v", err)
@@ -107,6 +111,7 @@ func syncBrokerServiceAccount(br *api.Broker) error {
 		},
 	}
 
+	addOwnerRefToObject(sc, asOwner(br))
 	err := action.Create(sc)
 	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return fmt.Errorf("Unable to create brokers service service account: %v", err)
@@ -117,7 +122,7 @@ func syncBrokerServiceAccount(br *api.Broker) error {
 		clusterRole := &authz.ClusterRole{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ClusterRole",
-				APIVersion: "rbac.authroization.k8s.io/v1beta1",
+				APIVersion: "rbac.authorization.k8s.io/v1beta1",
 			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%v-service", br.Name),
@@ -136,6 +141,7 @@ func syncBrokerServiceAccount(br *api.Broker) error {
 				},
 			},
 		}
+		addOwnerRefToObject(clusterRole, asOwner(br))
 		err := action.Create(clusterRole)
 		if err != nil && !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("Unable to create brokers service cluster role: %v", err)
@@ -144,7 +150,7 @@ func syncBrokerServiceAccount(br *api.Broker) error {
 		clusterRoleBinding := &authz.ClusterRoleBinding{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ClusterRoleBinding",
-				APIVersion: "rbac.authroization.k8s.io/v1beta1",
+				APIVersion: "rbac.authorization.k8s.io/v1beta1",
 			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%v-service", br.Name),
@@ -158,11 +164,12 @@ func syncBrokerServiceAccount(br *api.Broker) error {
 				},
 			},
 			RoleRef: authz.RoleRef{
-				APIGroup: "rbac.Authorization.k8s.io",
+				APIGroup: "rbac.authorization.k8s.io",
 				Kind:     "ClusterRole",
 				Name:     fmt.Sprintf("%v-service", br.Name),
 			},
 		}
+		addOwnerRefToObject(clusterRoleBinding, asOwner(br))
 		err = action.Create(clusterRoleBinding)
 		if err != nil && !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("Unable to create brokers service cluster role binding: %v", err)

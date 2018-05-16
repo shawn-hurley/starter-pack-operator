@@ -2,8 +2,10 @@ package broker
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/operator-framework/operator-sdk/pkg/sdk/action"
+	"github.com/operator-framework/operator-sdk/pkg/sdk/query"
 	api "github.com/shawn-hurley/starter-pack-operator/pkg/apis/starterpack/v1alpha1"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
@@ -25,61 +27,81 @@ func syncBrokerDeployment(br *api.Broker) error {
 			Name:      br.Name,
 			Namespace: br.Namespace,
 		},
-		Spec: extapi.DeploymentSpec{
-			Replicas: &replicas,
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
+	}
+	// create the spec
+	spec := extapi.DeploymentSpec{
+		Replicas: &replicas,
+		Selector: &metav1.LabelSelector{
+			MatchLabels: map[string]string{
+				"app": br.Name,
+			},
+		},
+		Template: v1.PodTemplateSpec{
+			ObjectMeta: metav1.ObjectMeta{
+				Labels: map[string]string{
 					"app": br.Name,
 				},
 			},
-			Template: v1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						"app": br.Name,
-					},
-				},
-				Spec: v1.PodSpec{
-					ServiceAccountName: fmt.Sprintf("%v-service", br.Name),
-					Containers: []v1.Container{
-						v1.Container{
-							Name:            "service-broker-skeleton",
-							Image:           br.Spec.Image,
-							ImagePullPolicy: v1.PullAlways,
-							Command:         []string{"/opt/servicebroker/servicebroker"},
-							Args:            createArgs(br),
-							Ports: []v1.ContainerPort{
-								v1.ContainerPort{
-									ContainerPort: int32(br.Spec.Port),
-								},
+			Spec: v1.PodSpec{
+				ServiceAccountName: fmt.Sprintf("%v-service", br.Name),
+				Containers: []v1.Container{
+					v1.Container{
+						Name:            "service-broker-skeleton",
+						Image:           br.Spec.Image,
+						ImagePullPolicy: v1.PullAlways,
+						Command:         []string{"/opt/servicebroker/servicebroker"},
+						Args:            createArgs(br),
+						Ports: []v1.ContainerPort{
+							v1.ContainerPort{
+								ContainerPort: int32(br.Spec.Port),
 							},
-							ReadinessProbe: &v1.Probe{
-								Handler: v1.Handler{
-									TCPSocket: &v1.TCPSocketAction{
-										Port: intstr.IntOrString{
-											IntVal: int32(br.Spec.Port),
-										},
+						},
+						ReadinessProbe: &v1.Probe{
+							Handler: v1.Handler{
+								TCPSocket: &v1.TCPSocketAction{
+									Port: intstr.IntOrString{
+										IntVal: int32(br.Spec.Port),
 									},
 								},
-								FailureThreshold:    int32(1),
-								InitialDelaySeconds: int32(10),
-								PeriodSeconds:       int32(10),
-								SuccessThreshold:    int32(1),
-								TimeoutSeconds:      int32(2),
 							},
-							VolumeMounts: createVolumeMounts(br),
+							FailureThreshold:    int32(1),
+							InitialDelaySeconds: int32(10),
+							PeriodSeconds:       int32(10),
+							SuccessThreshold:    int32(1),
+							TimeoutSeconds:      int32(2),
 						},
+						VolumeMounts: createVolumeMounts(br),
 					},
-					Volumes: createVolumes(br),
 				},
+				Volumes: createVolumes(br),
 			},
 		},
 	}
-	// TODO: We should get the deployment and make sure that it matches.
-	// If it does not match then we need update it.
-	err := action.Create(d)
-	if err != nil && !apierrors.IsAlreadyExists(err) {
+	err := query.Get(d)
+	if apierrors.IsNotFound(err) {
+		d.Spec = spec
+		addOwnerRefToObject(d, asOwner(br))
+		err := action.Create(d)
+		if err != nil && !apierrors.IsAlreadyExists(err) {
+			logrus.Debugf("Deployment unable to be created: %v", err)
+			return err
+		}
+		return nil
+	}
+	if err != nil {
 		logrus.Debugf("Deployment unable to be created: %v", err)
 		return err
+	}
+	if !reflect.DeepEqual(d.Spec, spec) {
+		//If the specs are not equal then something in broker spec has changed.
+		// We should update the deployment then.
+		d.Spec = spec
+		err := action.Update(d)
+		if err != nil {
+			logrus.Debugf("Deployment unable to be created: %v", err)
+			return err
+		}
+		return nil
 	}
 	return nil
 }

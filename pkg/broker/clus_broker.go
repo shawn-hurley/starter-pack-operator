@@ -3,6 +3,7 @@ package broker
 import (
 	"encoding/base64"
 	"fmt"
+	"reflect"
 
 	"github.com/operator-framework/operator-sdk/pkg/sdk/action"
 	"github.com/operator-framework/operator-sdk/pkg/sdk/query"
@@ -30,11 +31,7 @@ func syncClusterServiceBroker(br *api.Broker) error {
 	if err != nil {
 		return err
 	}
-	ca := se.Data["ca.crt"]
-	logrus.Infof("ca: %v", ca)
-	logrus.Infof("ca string: %q", ca)
 	caBundle := base64.StdEncoding.EncodeToString(se.Data["ca.crt"])
-	logrus.Infof("ca bundle: %v", caBundle)
 
 	u := &unstructured.Unstructured{}
 	spec := map[string]interface{}{
@@ -53,18 +50,34 @@ func syncClusterServiceBroker(br *api.Broker) error {
 		}
 	}
 
-	c := map[string]interface{}{
-		"spec": spec,
-	}
-	u.SetUnstructuredContent(c)
 	u.SetAPIVersion("servicecatalog.k8s.io/v1beta1")
 	u.SetKind("ClusterServiceBroker")
 	u.SetName(br.Name)
-	logrus.Infof("cluster service broker: %#v", u)
-	err = action.Create(u)
-	if err != nil && !apierrors.IsAlreadyExists(err) {
+	err = query.Get(u)
+	if apierrors.IsNotFound(err) {
+		u.Object["spec"] = spec
+		addOwnerRefToObject(u, asOwner(br))
+		err = action.Create(u)
+		if err != nil && !apierrors.IsAlreadyExists(err) {
+			logrus.Errorf("unable to create cluster service broker: %v", err)
+			return err
+		}
+		return nil
+	}
+
+	if err != nil {
 		logrus.Errorf("unable to create cluster service broker: %v", err)
 		return err
+	}
+
+	if !reflect.DeepEqual(u.Object["spec"], spec) {
+		u.Object["spec"] = spec
+		err = action.Update(u)
+		if err != nil {
+			logrus.Errorf("unable to update cluster service broker: %v", err)
+			return err
+		}
+		return nil
 	}
 	return nil
 }

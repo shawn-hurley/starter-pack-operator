@@ -22,6 +22,8 @@ func Reconcile(br *api.Broker) error {
 		err := prepareBrokerTLSSecrets(br)
 		if err != nil {
 			log.Errorf("unable to prepare borker TLS Secret")
+			br.Status.Phase = api.PhaseError
+			action.Update(br)
 			return err
 		}
 		br.Status.Phase = api.PhaseCreating
@@ -35,6 +37,8 @@ func Reconcile(br *api.Broker) error {
 	if br.Spec.AuthenticateK8SToken {
 		err := syncClientServiceAccount(br)
 		if err != nil {
+			br.Status.Phase = api.PhaseError
+			action.Update(br)
 			return err
 		}
 	}
@@ -42,25 +46,38 @@ func Reconcile(br *api.Broker) error {
 	log.Infof("sync service account.")
 	err := syncBrokerServiceAccount(br)
 	if err != nil {
+		br.Status.Phase = api.PhaseError
+		action.Update(br)
 		return err
 	}
 
 	log.Infof("sync deployment.")
 	err = syncBrokerDeployment(br)
 	if err != nil {
+		br.Status.Phase = api.PhaseError
+		action.Update(br)
 		return err
 	}
 
 	log.Infof("sync broker service.")
 	err = syncBrokerService(br)
 	if err != nil {
+		br.Status.Phase = api.PhaseError
+		action.Update(br)
 		return err
 	}
 
 	log.Infof("sync cluster service broker resource.")
 	err = syncClusterServiceBroker(br)
 	if err != nil {
+		br.Status.Phase = api.PhaseError
+		action.Update(br)
 		return err
+	}
+	// Don't update resource if nothing needs to change.
+	if br.Status.Phase != api.PhaseRunning {
+		br.Status.Phase = api.PhaseRunning
+		action.Update(br)
 	}
 	return nil
 }

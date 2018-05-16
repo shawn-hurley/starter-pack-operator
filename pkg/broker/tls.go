@@ -50,6 +50,8 @@ func prepareBrokerTLSSecrets(br *api.Broker) error {
 		"cert.crt": tls.EncodeCertificatePEM(crt),
 		"ca.crt":   tls.EncodeCertificatePEM(caCrt),
 	}
+	//Set owner reference
+	addOwnerRefToObject(se, asOwner(br))
 	err = action.Create(se)
 	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return err
