@@ -82,7 +82,6 @@ func syncBrokerDeployment(br *api.Broker) error {
 		return err
 	}
 	return nil
-
 }
 
 func createArgs(br *api.Broker) []string {
@@ -91,14 +90,14 @@ func createArgs(br *api.Broker) []string {
 		args = append(args, "--authenticate-k8s-token")
 	}
 	if br.Spec.TLSSecretRef != nil {
-		args = append(args, "--tls-cert-file", "/var/run/osb-starter-pack/tls.crt", "--tls-private-key-file", "/var/run/osb-starter-pack/tls.key")
+		args = append(args, "--tls-cert-file", "/var/run/osb-starter-pack/cert.crt", "--tls-private-key-file", "/var/run/osb-starter-pack/cert.key")
 	}
 	args = append(args, "-v", "5", "-logtostderr")
 	return args
 }
 
 func createVolumeMounts(br *api.Broker) []v1.VolumeMount {
-	/*if br.Spec.TLSSecretRef != nil {
+	if br.Spec.TLSSecretRef != nil {
 		return []v1.VolumeMount{
 			v1.VolumeMount{
 				MountPath: "/var/run/osb-starter-pack",
@@ -107,37 +106,34 @@ func createVolumeMounts(br *api.Broker) []v1.VolumeMount {
 			},
 		}
 	}
-	*/
 	return nil
 }
 
 func createVolumes(br *api.Broker) []v1.Volume {
-	/*
-		if br.Spec.TLSSecretRef != nil {
-			var mode int32 = 420
-			return []v1.Volume{
-				v1.Volume{
-					Name: "osb-starter-pack-ssl",
-					VolumeSource: v1.VolumeSource{
-						Secret: &v1.SecretVolumeSource{
-							DefaultMode: &mode,
-							SecretName:  fmt.Sprintf("tls-%v", br.Name),
-							Items: []v1.KeyToPath{
-								v1.KeyToPath{
-									Key:  "tls.crt",
-									Path: "cert.crt",
-								},
-								v1.KeyToPath{
-									Key:  "tls.key",
-									Path: "cert.key",
-								},
+	if br.Spec.TLSSecretRef != nil {
+		var mode int32 = 420
+		return []v1.Volume{
+			v1.Volume{
+				Name: "osb-starter-pack-ssl",
+				VolumeSource: v1.VolumeSource{
+					Secret: &v1.SecretVolumeSource{
+						DefaultMode: &mode,
+						SecretName:  fmt.Sprintf("tls-%v", br.Name),
+						Items: []v1.KeyToPath{
+							v1.KeyToPath{
+								Key:  "cert.crt",
+								Path: "cert.crt",
+							},
+							v1.KeyToPath{
+								Key:  "cert.key",
+								Path: "cert.key",
 							},
 						},
 					},
 				},
-			}
+			},
 		}
-	*/
+	}
 
 	return nil
 }

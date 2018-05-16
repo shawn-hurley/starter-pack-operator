@@ -17,4 +17,7 @@ spec:
           image: docker.io/shurley/starterpack-operator:latest
           command:
           - starter-pack-operator
+          args:
+          - "--namespace"
+          - "test"
           imagePullPolicy: Always

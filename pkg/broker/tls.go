@@ -38,7 +38,7 @@ func prepareBrokerTLSSecrets(br *api.Broker) error {
 	tc := tls.CertConfig{
 		CommonName:   fmt.Sprintf("%v operator", br.Name),
 		Organization: []string{"starterpack.org"},
-		AltNames:     tls.NewAltNames([]string{fmt.Sprintf("*.%v.%v.svc.cluster.local", br.Name, br.Namespace)}),
+		AltNames:     tls.NewAltNames([]string{fmt.Sprintf("*.%v.%v.svc.cluster.local", br.Name, br.Namespace), fmt.Sprintf("%v.%v.svc.cluster.local", br.Name, br.Namespace)}),
 	}
 	key, crt, err := newKeyAndCert(caCrt, caKey, tc)
 	if err != nil {

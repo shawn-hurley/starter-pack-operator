@@ -2,3 +2,5 @@ apiVersion: "starterpack.osbkit.com/v1alpha1"
 kind: "Broker"
 metadata:
   name: "example"
+spec:
+  image: docker.io/shurley/osb-starterpack:master
