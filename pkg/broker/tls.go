@@ -5,8 +5,7 @@ import (
 	"crypto/x509"
 	"fmt"
 
-	"github.com/operator-framework/operator-sdk/pkg/sdk/action"
-	"github.com/operator-framework/operator-sdk/pkg/sdk/query"
+	action "github.com/operator-framework/operator-sdk/pkg/sdk"
 	api "github.com/shawn-hurley/starter-pack-operator/pkg/apis/starterpack/v1alpha1"
 	"github.com/shawn-hurley/starter-pack-operator/pkg/tls"
 	"k8s.io/api/core/v1"
@@ -26,7 +25,7 @@ func prepareBrokerTLSSecrets(br *api.Broker) error {
 		},
 	}
 
-	err := query.Get(se)
+	err := action.Get(se)
 	if err == nil {
 		return nil
 	}

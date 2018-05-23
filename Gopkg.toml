@@ -14,4 +14,5 @@
   name = "github.com/operator-framework/operator-sdk"
   # The version rule is used for a specific release and the master branch for in between releases.
   branch = "master"
+  #source = "github.com/shawn-hurley/operator-sdk"
   # version = "=v0.0.5"

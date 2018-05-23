@@ -1,7 +1,7 @@
 package broker
 
 import (
-	"github.com/operator-framework/operator-sdk/pkg/sdk/action"
+	action "github.com/operator-framework/operator-sdk/pkg/sdk"
 	api "github.com/shawn-hurley/starter-pack-operator/pkg/apis/starterpack/v1alpha1"
 	log "github.com/sirupsen/logrus"
 )

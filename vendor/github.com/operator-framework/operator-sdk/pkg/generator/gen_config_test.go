@@ -12,5 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package query contains a set of APIs for accessing kubernetes objects.
-package query
+package generator
+
+import (
+	"bytes"
+	"testing"
+)
+
+const configExp = `apiVersion: app.example.com/v1alpha1
+kind: AppService
+projectName: app-operator
+`
+
+func TestGenConfig(t *testing.T) {
+	buf := &bytes.Buffer{}
+	if err := renderConfigFile(buf, appAPIVersion, appKind, appProjectName); err != nil {
+		t.Error(err)
+	}
+	if configExp != buf.String() {
+		t.Errorf(errorMessage, configExp, buf.String())
+	}
+}

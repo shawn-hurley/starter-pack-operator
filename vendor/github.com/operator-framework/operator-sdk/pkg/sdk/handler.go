@@ -12,26 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package sdk
 
-import (
-	"github.com/spf13/cobra"
+import "context"
 
-	"github.com/operator-framework/operator-sdk/version"
-)
-
-func NewRootCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "operator-sdk",
-		Short:   "A sdk for building operator with ease",
-		Version: version.Version,
-	}
-
-	cmd.AddCommand(NewNewCmd())
-	cmd.AddCommand(NewBuildCmd())
-	cmd.AddCommand(NewGenerateCmd())
-	cmd.AddCommand(NewUpCmd())
-	cmd.AddCommand(NewCompletionCmd())
-
-	return cmd
+// Handler reacts to events and outputs actions.
+// If any intended action failed, the event would be re-triggered.
+// For actions done before the failed action, there is no rollback.
+type Handler interface {
+	Handle(context.Context, Event) error
 }
+
+var (
+	// RegisteredHandler is the user registered handler set by sdk.Handle()
+	RegisteredHandler Handler
+)

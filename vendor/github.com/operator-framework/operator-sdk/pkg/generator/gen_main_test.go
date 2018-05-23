@@ -14,17 +14,21 @@
 
 package generator
 
-// mainTmpl is the template for cmd/main.go.
-const mainTmpl = `package main
+import (
+	"bytes"
+	"testing"
+)
+
+const mainExp = `package main
 
 import (
 	"context"
 	"runtime"
 
-	stub "{{.StubImport}}"
-	sdk "{{.OperatorSDKImport}}"
-	k8sutil "{{.K8sutilImport}}"
-	sdkVersion "{{.SDKVersionImport}}"
+	stub "github.com/example-inc/app-operator/pkg/stub"
+	sdk "github.com/operator-framework/operator-sdk/pkg/sdk"
+	k8sutil "github.com/operator-framework/operator-sdk/pkg/util/k8sutil"
+	sdkVersion "github.com/operator-framework/operator-sdk/version"
 
 	"github.com/sirupsen/logrus"
 )
@@ -38,8 +42,8 @@ func printVersion() {
 func main() {
 	printVersion()
 
-	resource := "{{.APIVersion}}"
-	kind := "{{.Kind}}"
+	resource := "app.example.com/v1alpha1"
+	kind := "AppService"
 	namespace, err := k8sutil.GetWatchNamespace()
 	if err != nil {
 		logrus.Fatalf("Failed to get watch namespace: %v", err)
@@ -51,3 +55,15 @@ func main() {
 	sdk.Run(context.TODO())
 }
 `
+
+func TestGenMain(t *testing.T) {
+	buf := &bytes.Buffer{}
+	if err := renderMainFile(buf, appRepoPath, appAPIVersion, appKind); err != nil {
+		t.Error(err)
+		return
+	}
+
+	if mainExp != buf.String() {
+		t.Errorf(errorMessage, mainExp, buf.String())
+	}
+}

@@ -14,15 +14,19 @@
 
 package generator
 
-// handlerTmpl is the template for stub/handler.go.
-const handlerTmpl = `package stub
+import (
+	"bytes"
+	"testing"
+)
+
+const handlerExp = `package stub
 
 import (
 	"context"
 
-	"{{.RepoPath}}/pkg/apis/{{.APIDirName}}/{{.Version}}"
+	"github.com/example-inc/app-operator/pkg/apis/app/v1alpha1"
 
-	"{{.OperatorSDKImport}}"
+	"github.com/operator-framework/operator-sdk/pkg/sdk"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -40,7 +44,7 @@ type Handler struct {
 
 func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 	switch o := event.Object.(type) {
-	case *{{.Version}}.{{.Kind}}:
+	case *v1alpha1.AppService:
 		err := sdk.Create(newbusyBoxPod(o))
 		if err != nil && !errors.IsAlreadyExists(err) {
 			logrus.Errorf("Failed to create busybox pod : %v", err)
@@ -51,7 +55,7 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 }
 
 // newbusyBoxPod demonstrates how to create a busybox pod
-func newbusyBoxPod(cr *{{.Version}}.{{.Kind}}) *v1.Pod {
+func newbusyBoxPod(cr *v1alpha1.AppService) *v1.Pod {
 	labels := map[string]string{
 		"app": "busy-box",
 	}
@@ -65,9 +69,9 @@ func newbusyBoxPod(cr *{{.Version}}.{{.Kind}}) *v1.Pod {
 			Namespace: cr.Namespace,
 			OwnerReferences: []metav1.OwnerReference{
 				*metav1.NewControllerRef(cr, schema.GroupVersionKind{
-					Group:   {{.Version}}.SchemeGroupVersion.Group,
-					Version: {{.Version}}.SchemeGroupVersion.Version,
-					Kind:    "{{.Kind}}",
+					Group:   v1alpha1.SchemeGroupVersion.Group,
+					Version: v1alpha1.SchemeGroupVersion.Version,
+					Kind:    "AppService",
 				}),
 			},
 			Labels: labels,
@@ -84,3 +88,14 @@ func newbusyBoxPod(cr *{{.Version}}.{{.Kind}}) *v1.Pod {
 	}
 }
 `
+
+func TestGenHandler(t *testing.T) {
+	buf := &bytes.Buffer{}
+	if err := renderHandlerFile(buf, appRepoPath, appKind, appApiDirName, appVersion); err != nil {
+		t.Error(err)
+		return
+	}
+	if handlerExp != buf.String() {
+		t.Errorf(errorMessage, handlerExp, buf.String())
+	}
+}

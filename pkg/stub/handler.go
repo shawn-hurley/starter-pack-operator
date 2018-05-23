@@ -1,17 +1,17 @@
 package stub
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/shawn-hurley/starter-pack-operator/pkg/apis/starterpack/v1alpha1"
 	"github.com/shawn-hurley/starter-pack-operator/pkg/broker"
 
-	"github.com/operator-framework/operator-sdk/pkg/sdk/handler"
-	"github.com/operator-framework/operator-sdk/pkg/sdk/types"
+	"github.com/operator-framework/operator-sdk/pkg/sdk"
 	log "github.com/sirupsen/logrus"
 )
 
-func NewHandler() handler.Handler {
+func NewHandler() sdk.Handler {
 	return &Handler{}
 }
 
@@ -19,7 +19,7 @@ type Handler struct {
 	// Fill me
 }
 
-func (h *Handler) Handle(ctx types.Context, event types.Event) error {
+func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 	switch o := event.Object.(type) {
 	case *v1alpha1.Broker:
 		if !event.Deleted {

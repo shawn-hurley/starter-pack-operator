@@ -177,14 +177,10 @@
   packages = [
     "pkg/k8sclient",
     "pkg/sdk",
-    "pkg/sdk/action",
-    "pkg/sdk/handler",
-    "pkg/sdk/informer",
-    "pkg/sdk/types",
     "pkg/util/k8sutil",
     "version"
   ]
-  revision = "940ded76f1f32c8f1b688c204a6abaa6e23aac3e"
+  revision = "02cf8522bd996f68eebe9ebec6bcda5a05d0393d"
 
 [[projects]]
   branch = "master"
@@ -419,6 +415,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e3e1c71f9a58b16fa8c4903c691aa7c8a09390566a4ebe4e7b9644c7250e003b"
+  inputs-digest = "a51cfe33735f75a3385d1085ec33537e87cd28c429f2b4211576516005a97629"
   solver-name = "gps-cdcl"
   solver-version = 1

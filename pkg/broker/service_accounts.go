@@ -3,7 +3,7 @@ package broker
 import (
 	"fmt"
 
-	"github.com/operator-framework/operator-sdk/pkg/sdk/action"
+	action "github.com/operator-framework/operator-sdk/pkg/sdk"
 	api "github.com/shawn-hurley/starter-pack-operator/pkg/apis/starterpack/v1alpha1"
 	"k8s.io/api/core/v1"
 	authz "k8s.io/api/rbac/v1beta1"

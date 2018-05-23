@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/operator-framework/operator-sdk/pkg/sdk/action"
-	"github.com/operator-framework/operator-sdk/pkg/sdk/query"
+	action "github.com/operator-framework/operator-sdk/pkg/sdk"
 	api "github.com/shawn-hurley/starter-pack-operator/pkg/apis/starterpack/v1alpha1"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
@@ -77,7 +76,7 @@ func syncBrokerDeployment(br *api.Broker) error {
 			},
 		},
 	}
-	err := query.Get(d)
+	err := action.Get(d)
 	if apierrors.IsNotFound(err) {
 		d.Spec = spec
 		addOwnerRefToObject(d, asOwner(br))

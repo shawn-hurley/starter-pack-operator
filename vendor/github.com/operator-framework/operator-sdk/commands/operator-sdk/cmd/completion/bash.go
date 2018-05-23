@@ -1,4 +1,4 @@
-// Copyright 2018 The Operator-SDK Authors
+// Copyright © 2018 The Operator-SDK Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,5 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package action contains a set of APIs for mutating kubernetes objects.
-package action
+package completion
+
+import (
+	"os"
+
+	"github.com/spf13/cobra"
+)
+
+func NewBashCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "bash",
+		Short: "Generate bash completions",
+		RunE: func(cmd *cobra.Command, cmdArgs []string) error {
+			return cmd.Root().GenBashCompletion(os.Stdout)
+		},
+	}
+}

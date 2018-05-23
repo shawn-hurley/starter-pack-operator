@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/operator-framework/operator-sdk/pkg/sdk/action"
-	"github.com/operator-framework/operator-sdk/pkg/sdk/query"
+	action "github.com/operator-framework/operator-sdk/pkg/sdk"
 	api "github.com/shawn-hurley/starter-pack-operator/pkg/apis/starterpack/v1alpha1"
 	"github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
@@ -27,7 +26,7 @@ func syncClusterServiceBroker(br *api.Broker) error {
 			Namespace: br.Namespace,
 		},
 	}
-	err := query.Get(se)
+	err := action.Get(se)
 	if err != nil {
 		return err
 	}
@@ -53,7 +52,7 @@ func syncClusterServiceBroker(br *api.Broker) error {
 	u.SetAPIVersion("servicecatalog.k8s.io/v1beta1")
 	u.SetKind("ClusterServiceBroker")
 	u.SetName(br.Name)
-	err = query.Get(u)
+	err = action.Get(u)
 	if apierrors.IsNotFound(err) {
 		u.Object["spec"] = spec
 		addOwnerRefToObject(u, asOwner(br))

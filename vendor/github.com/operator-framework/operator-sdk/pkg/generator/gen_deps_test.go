@@ -12,20 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package handler
+package generator
 
 import (
-	sdkTypes "github.com/operator-framework/operator-sdk/pkg/sdk/types"
+	"bytes"
+	"testing"
 )
 
-// Handler reacts to events and outputs actions.
-// If any intended action failed, the event would be re-triggered.
-// For actions done before the failed action, there is no rollback.
-type Handler interface {
-	Handle(sdkTypes.Context, sdkTypes.Event) error
+func TestGenGopkg(t *testing.T) {
+	buf := &bytes.Buffer{}
+	if err := renderGopkgTomlFile(buf); err != nil {
+		t.Error(err)
+		return
+	}
+
+	if gopkgTomlTmpl != buf.String() {
+		t.Errorf(errorMessage, gopkgTomlTmpl, buf.String())
+	}
+
+	buf = &bytes.Buffer{}
+	if err := renderGopkgLockFile(buf); err != nil {
+		t.Error(err)
+		return
+	}
+	if gopkgLockTmpl != buf.String() {
+		t.Errorf(errorMessage, gopkgLockTmpl, buf.String())
+	}
 }
-
-var (
-	// RegisteredHandler is the user registered handler set by sdk.Handle()
-	RegisteredHandler Handler
-)
